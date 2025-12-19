@@ -19,6 +19,15 @@
            <origin xyz="0.0 0.0 0.1" rpy="0.0 0.0 0.0"/>
            <material name="grey"/>
         </visual>
+        <collision>
+            <geometry>
+                <box size="0.4 0.4 0.2"/> <!-- length unit: m-->
+            </geometry>
+        </collision>
+        <inertial>
+            <mass value="7.0"/> <!-- mass unit: kg-->
+            <inertia ixx="0.187" ixy="0.0" ixz="0.0" iyy="0.117" iyz="0.0" izz="0.117"/>
+        </inertial>
     </link>    
 
     <!-- module links -->
@@ -63,38 +72,77 @@
     <link name="fl_wheel">
         <visual>
             <geometry>
-                <cylinder radius="0.05" length="0.025"/>
+                <cylinder radius="0.04" length="0.03"/>
             </geometry>
             <origin xyz="0 0 0" rpy="1.57 0 0"/>
             <material name="black"/>
         </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.04" length="0.03"/>
+            </geometry>
+            <origin xyz="0 0 0" rpy="1.57 0 0"/>
+        </collision>
+        <inertial>
+            <mass value="0.079"/>
+            <inertia ixx="0.002291" ixy="0.0" ixz="0.0" iyy="0.002291" iyz="0.0" izz="0.0000632"/>
+        </inertial>
     </link>
     <link name="fr_wheel">
         <visual>
             <geometry>
-                <cylinder radius="0.05" length="0.025"/>
+                <cylinder radius="0.04" length="0.03"/>
             </geometry>
             <origin xyz="0 0 0" rpy="1.57 0 0"/>
             <material name="black"/>
         </visual>
-    </link>
+        <collision>
+            <geometry>
+                <cylinder radius="0.04" length="0.03"/>
+            </geometry>
+            <origin xyz="0 0 0" rpy="1.57 0 0"/>
+        </collision>
+        <inertial>
+            <mass value="0.079"/>
+            <inertia ixx="0.002291" ixy="0.0" ixz="0.0" iyy="0.002291" iyz="0.0" izz="0.0000632"/>
+        </inertial>
+   </link>
     <link name="bl_wheel">
         <visual>
             <geometry>
-                <cylinder radius="0.05" length="0.025"/>
+                <cylinder radius="0.04" length="0.03"/>
             </geometry>
             <origin xyz="0 0 0" rpy="1.57 0 0"/>
             <material name="black"/>
         </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.04" length="0.03"/>
+            </geometry>
+            <origin xyz="0 0 0" rpy="1.57 0 0"/>
+        </collision>
+        <inertial>
+            <mass value="0.079"/>
+            <inertia ixx="0.002291" ixy="0.0" ixz="0.0" iyy="0.002291" iyz="0.0" izz="0.0000632"/>
+        </inertial>
     </link>
     <link name="br_wheel">
         <visual>
             <geometry>
-                <cylinder radius="0.05" length="0.025"/>
+                <cylinder radius="0.04" length="0.03"/>
             </geometry>
             <origin xyz="0 0 0" rpy="1.57 0 0"/>
             <material name="black"/>
         </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.04" length="0.03"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <mass value="0.079"/>
+            <inertia ixx="0.002291" ixy="0.0" ixz="0.0" iyy="0.002291" iyz="0.0" izz="0.0000632"/>
+        </inertial>
     </link>
 
     <!-- wheel & steer module joints -->
