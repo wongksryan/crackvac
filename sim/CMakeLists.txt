@@ -9,6 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
@@ -36,6 +37,7 @@ add_executable(state_publisher src/state_publisher.cpp)
 target_link_libraries(state_publisher PUBLIC
   ${geometry_msgs_TARGETS}
   ${sensor_msgs_TARGETS}
+  tf2::tf2
   tf2_ros::tf2_ros
   ${tf2_geometry_msgs_TARGETS}
   rclcpp::rclcpp

@@ -36,12 +36,7 @@ class StatePublisher : public rclcpp::Node{
                 "bl_steer_joint", "bl_wheel_joint"
                 "br_steer_joint", "br_wheel_joint"
             };
-            joint_positions = {
-                "-0.15, 0.15, 0", "0 0 0"
-                "0.15, 0.15, 0", "0 0 0"
-                "-0.15, -0.15, 0", "0 0 0"
-                "0.15, -0.15, 0", "0 0 0"
-            };
+            joint_positions.resize(joint_names.size(), 0.0);
         }
 
     void publish();
@@ -69,7 +64,7 @@ void StatePublisher::publish(){
     //TODO: make a simple movement by moving joints 
 
     pub->publish(joint_state);
-    RCLCPP_INFO(this->get_logger());
+    RCLCPP_INFO(this->get_logger(), "Publishing States ...");
 }
 
 int main(int argc, char * argv[]){
