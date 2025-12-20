@@ -48,10 +48,13 @@ def generate_launch_description():
             executable='rviz2',
             name='rviz2',
             output='screen',
-            arguments=['-d', PathJoinSubstitution([
-                FindPackageShare('sim'),
-                'rviz',
-                'robot_display.rviz'
-            ])]
+            arguments=[
+                '-d', 
+                PathJoinSubstitution([
+                    FindPackageShare('sim'),
+                    'rviz',
+                    'robot_display.rviz'
+                ]),
+            ]
         )
     ])

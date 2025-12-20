@@ -50,8 +50,13 @@ install(TARGETS
 )
 
 install(DIRECTORY
+  rviz
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(DIRECTORY
   launch
-  DESTINATION share/${PROJECT_NAME}/
+  DESTINATION share/${PROJECT_NAME}
 )
 
 install(DIRECTORY
