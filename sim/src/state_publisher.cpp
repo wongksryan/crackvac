@@ -31,10 +31,10 @@ class StatePublisher : public rclcpp::Node{
             timer = this->create_wall_timer(33ms,std::bind(&StatePublisher::publish,this));
 
             joint_names = {
-                "fl_steer_joint", "fl_wheel_joint"
-                "fr_steer_joint", "fr_wheel_joint"
-                "bl_steer_joint", "bl_wheel_joint"
-                "br_steer_joint", "br_wheel_joint"
+                "fl_steer_joint", "fl_wheel_joint",
+                "fr_steer_joint", "fr_wheel_joint",
+                "bl_steer_joint", "bl_wheel_joint",
+                "br_steer_joint", "br_wheel_joint",
             };
             joint_positions.resize(joint_names.size(), 0.0);
         }
@@ -46,23 +46,32 @@ class StatePublisher : public rclcpp::Node{
 
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub;
     //std::shared_ptr<tf2_ros::TransformBroadcaster> broadcaster;
-    //rclcpp::Rate::SharedPtr loop_rate;
+    rclcpp::Rate::SharedPtr loop_rate;
     rclcpp::TimerBase::SharedPtr timer;
     std::vector<std::string> joint_names;
     std::vector<double> joint_positions;
+    double dt;
+    rclcpp::Time last_time;
 };
 
 void StatePublisher::publish(){
     // create the necessary messages
     //geometry_msgs::msg::TransformStamped t; TODO: add odometry`
+    rclcpp::Time now = this->get_clock()->now();
+    dt = now.seconds() - last_time.seconds(); 
+    last_time = now;
+
     sensor_msgs::msg::JointState joint_state;
-
-    joint_state.header.stamp = this->get_clock()->now();
+    joint_state.header.stamp = now;
     joint_state.name = joint_names;
+    //joint_state.velocity.resize(8, 2.0);
+
+    //rotate wheel and steer
+    for (int i = 0; i < 8; i++) {
+        joint_positions[i] += 2.0 * dt; 
+    }
     joint_state.position = joint_positions; 
-
-    //TODO: make a simple movement by moving joints 
-
+    
     pub->publish(joint_state);
     RCLCPP_INFO(this->get_logger(), "Publishing States ...");
 }
