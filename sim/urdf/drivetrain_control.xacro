@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+   <ros2_control name="mock_hardware_system" type="system">
+        <hardware>
+            <plugin>mock_components/GenericSystem</plugin>
+            <param name="calculate_dynamics">true</param>
+            <param name="custom_interface_with_following_offset"></param>
+            <param name="disable_commands">false</param>
+            <param name="mock_gpio_commands">false</param>
+            <param name="mock_sensor_commands">false</param>
+            <param name="position_state_following_offset">0.0</param>
+        </hardware>
+
+        <xacro:macro name="swerve_module_control" params="name">
+            <joint name="${name}_wheel_joint"> 
+                <command_interface name="velocity"/>
+                <state_interface name="position"/>
+                <state_interface name="velocity"/>
+            </joint>
+            <joint name="${name}_steer_joint"> 
+                <command_interface name="velocity"/>
+                <state_interface name="position"/>
+                <state_interface name="velocity"/>
+            </joint>
+        </xacro:macro>
+
+        <xacro:swerve_module_control name="fl"/>
+        <xacro:swerve_module_control name="fr"/>
+        <xacro:swerve_module_control name="bl"/>
+        <xacro:swerve_module_control name="br"/>
+   </ros2_control> 
+</robot>

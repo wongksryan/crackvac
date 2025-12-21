@@ -52,8 +52,8 @@ def generate_launch_description():
                 '-d', 
                 PathJoinSubstitution([
                     FindPackageShare('sim'),
-                    'rviz',
-                    'robot_display.rviz'
+                    'configs',
+                    'display.rviz'
                 ]),
             ]
         )

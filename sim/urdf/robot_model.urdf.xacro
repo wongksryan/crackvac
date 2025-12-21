@@ -91,4 +91,7 @@
     <xacro:swerve_module name="fr" mount="0.15 0.15 0.0"/>    
     <xacro:swerve_module name="bl" mount="-0.15 -0.15 0.0"/>    
     <xacro:swerve_module name="br" mount="0.15 -0.15 0.0"/>    
+
+    <!-- control -->
+    <xacro:include filename="drivetrain_control.xacro"/>
 </robot>

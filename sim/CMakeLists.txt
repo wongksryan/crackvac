@@ -5,7 +5,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -14,54 +13,73 @@ find_package(tf2_ros REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(rosidl_typesupport_cpp REQUIRED)
-
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(controller_interface REQUIRED)
+find_package(hardware_interface REQUIRED)
+find_package(pluginlib REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
   set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-# Add executable
 add_executable(state_publisher src/state_publisher.cpp)
 
 target_link_libraries(state_publisher PUBLIC
-  ${geometry_msgs_TARGETS}
-  ${sensor_msgs_TARGETS}
+  rclcpp::rclcpp
   tf2::tf2
   tf2_ros::tf2_ros
-  ${tf2_geometry_msgs_TARGETS}
+  tf2_geometry_msgs::tf2_geometry_msgs
+  ${sensor_msgs_TARGETS}
+)
+
+#build swerve_controller library
+add_library(swerve_controller src/swerve_controller.cpp)
+target_include_directories(swerve_controller PUBLIC 
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+)
+target_link_libraries(swerve_controller PUBLIC
   rclcpp::rclcpp
+  controller_interface::controller_interface
+  hardware_interface::hardware_interface
+  pluginlib::pluginlib
 )
 
+# Install headers
+install(
+  DIRECTORY include/
+  DESTINATION include/${PROJECT_NAME}
+)
+# Install library
+install(
+  TARGETS swerve_controller
+  EXPORT export_${PROJECT_NAME}
+  LIBRARY DESTINATION lib/${PROJECT_NAME}
+)
 # Install the executable
-install(TARGETS
-  state_publisher
-  DESTINATION lib/${PROJECT_NAME}
+install(
+  TARGETS state_publisher
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
-
-install(DIRECTORY
-  rviz
+#install export targets
+install(EXPORT export_${PROJECT_NAME}
+  NAMESPACE ${PROJECT_NAME}::
+  DESTINATION share/${PROJECT_NAME}/cmake
+)
+#install other resources
+install(
+  DIRECTORY configs launch urdf
   DESTINATION share/${PROJECT_NAME}
 )
-
-install(DIRECTORY
-  launch
-  DESTINATION share/${PROJECT_NAME}
+# Export old-style CMake variables
+ament_export_include_directories(
+  include
 )
 
-install(DIRECTORY
-  urdf
-  DESTINATION share/${PROJECT_NAME}
+ament_export_targets(
+  export_${PROJECT_NAME}
 )
 
 ament_package()
