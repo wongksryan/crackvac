@@ -13,13 +13,13 @@
         <xacro:macro name="swerve_module_control" params="name">
             <joint name="${name}_steer_joint"> 
                 <command_interface name="position"/>
-                <state_interface name="velocity" initial_value="0.0"/>
-                <state_interface name="position" initial_value="0.0"/>
+                <state_interface name="velocity"/>
+                <state_interface name="position"/>
             </joint>
             <joint name="${name}_wheel_joint"> 
                 <command_interface name="velocity"/>
-                <state_interface name="velocity" initial_value="0.0"/>
-                <state_interface name="position" initial_value="0.0"/>
+                <state_interface name="velocity"/>
+                <state_interface name="position"/>
             </joint>
         </xacro:macro>
 
