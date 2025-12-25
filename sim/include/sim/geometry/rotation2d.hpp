@@ -4,17 +4,16 @@
 #include <cmath>
 
 //rotation in a 2d coordinate frame represented by a point on the unit circle.
-class Rotation2D 
+struct Rotation2d 
 {
-protected:
-    double cos_theta;
-    double sin_theta;
-public:
-    const static double kEpsilon = 1e-9;
+    double cos_theta = 1.0;
+    double sin_theta = 0.0;
 
-    Rotation2D(double x, double y, bool normalize) {
+    constexpr static double kEpsilon = 1e-9;
+    Rotation2d() = default;
+    Rotation2d(double x, double y, bool normalize) {
         if (normalize) {
-            double hypot = std::hypot(cos_theta, sin_theta);
+            double hypot = std::hypot(x, y);
             if (hypot > kEpsilon) {
                 cos_theta = x / hypot;
                 sin_theta = y / hypot;
@@ -27,22 +26,21 @@ public:
             sin_theta = y;
         }
     }
-    Rotation2D() : Rotation2D(1, 0, false) {}
-    Rotation2D(double x, double y) : Rotation2D(x, y, true) {}
-    Rotation2D(double radians) : Rotation2D(std::cos(radians), std::sin(radians), false) {}
+    Rotation2d(double x, double y) : Rotation2d(x, y, true) {}
+    Rotation2d(double radians) : Rotation2d(std::cos(radians), std::sin(radians), false) {}
 
-    static Rotation2D from_degrees(double degrees) {
+    static Rotation2d from_degrees(double degrees) {
         double radians = degrees * M_PI / 180.0;
-        return Rotation2D(radians);
+        return Rotation2d(radians);
     }
 
-    static Rotation2D from_radians(double radians) {
-        return Rotation2D(radians);
+    static Rotation2d from_radians(double radians) {
+        return Rotation2d(radians);
     }
 
-    static Rotation2D from_rotations(double rotations) {
+    static Rotation2d from_rotations(double rotations) {
         double radians = rotations * 2.0 * M_PI;
-        return Rotation2D(radians);
+        return Rotation2d(radians);
     }
 
     double cos() {
@@ -77,39 +75,39 @@ public:
         return get_radians() / (2.0 * M_PI);
     }
 
-    Rotation2D minus(Rotation2D other) {
+    Rotation2d minus(Rotation2d other) {
         double theta = get_radians() - other.get_radians();
-       return Rotation2D(theta); 
+       return Rotation2d(theta); 
     }
 
     //adds two rotations together, with the result being bounded between -π and π.
-    Rotation2D plus(Rotation2D other) {
+    Rotation2d plus(Rotation2d other) {
         double theta = get_radians() + other.get_radians();
         while(theta > M_PI) theta -= 2.0 * M_PI;
         while(theta < -M_PI) theta += 2.0 * M_PI;
-        return Rotation2D(theta);
+        return Rotation2d(theta);
     }
 
     //adds the new rotation to the current rotation using a rotation matricos_theta.
-    Rotation2D rotate_by(Rotation2D other) {
-        return Rotation2D(
+    Rotation2d rotate_by(Rotation2d other) {
+        return Rotation2d(
             cos_theta * other.cos_theta - sin_theta * other.sin_theta, 
             sin_theta * other.cos_theta + cos_theta * other.sin_theta
         );
     }
 
-    Rotation2D times(double scalar) {
+    Rotation2d times(double scalar) {
         double theta = get_radians() * scalar;
-        return Rotation2D(theta);
+        return Rotation2d(theta);
     }
 
-    Rotation2D div(double scalar) {
+    Rotation2d div(double scalar) {
         double theta = get_radians() / scalar;
-        return Rotation2D(theta);
+        return Rotation2d(theta);
     }
 
-    Rotation2D unary_minus() {
-        return Rotation2D(-get_radians());
+    Rotation2d unary_minus() {
+        return Rotation2d(-get_radians());
     }
 };
 

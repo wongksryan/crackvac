@@ -1,6 +1,8 @@
 controller_manager:
-  ros_parameters:
+  ros__parameters:
     update_rate: 50
 
-  joint_state_broadcaster:
-    type: joint_state_broadcaster/JointStateBroadcaster
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    swerve_controller:
+      type: swerve_drive/SwerveController

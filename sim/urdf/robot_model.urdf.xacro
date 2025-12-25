@@ -11,15 +11,22 @@
        <color rgba="0 0 0 1.0"/> 
     </material>
 
+    <!-- constants -->
+    <xacro:property name="wheel_radius" value="0.04"/> <!-- length unit: m-->
+    <xacro:property name="wheel_width" value="0.03"/> 
+    <xacro:property name="wheel_base" value="0.4064"/> 
+    <xacro:property name="wheel_base_half" value="${wheel_base / 2}"/> 
+    <xacro:property name="robot_mass" value="7.0"/> <!-- mass unit: kg-->
+     
     <!-- macros -->
     <link name="dummy_link">
         <collision>
             <geometry>
-                <box size="0.4 0.4 0.2"/> <!-- length unit: m-->
+                <box size="0.4 0.4 0.2"/> 
             </geometry>
         </collision>
         <inertial>
-            <mass value="7.0"/> <!-- mass unit: kg-->
+            <mass value="${robot_mass}"/> 
             <inertia ixx="0.187" ixy="0.0" ixz="0.0" iyy="0.117" iyz="0.0" izz="0.117"/>
         </inertial>
     </link>
@@ -41,22 +48,22 @@
     </xacro:macro>
     
     <xacro:macro name="swerve_module" params="name mount">
-        <link name="${name}_steer">
+        <link name="${name}_steer_link">
             <visual>
-            <geometry>
+                <geometry>
                     <cylinder radius="0.05" length="0.01"/> 
-            </geometry> 
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <material name="blue"/>
+                </geometry> 
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <material name="blue"/>
             </visual>
         </link>
 
-        <link name="${name}_wheel">
+        <link name="${name}_wheel_link">
             <visual>
                 <geometry>
-                    <cylinder radius="0.04" length="0.03"/>
+                    <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
                 </geometry>
-                <origin xyz="0 0 0" rpy="1.57 0 0"/>
+                <origin xyz="0 0 0" rpy="1.57 0 0"/> <!-- 90 degree is 1.57 rad -->
                 <material name="black"/>
             </visual>
             <collision>
@@ -73,24 +80,24 @@
 
         <joint name="${name}_steer_joint" type="continuous">
             <parent link="base_link"/>
-            <child link="${name}_steer"/>
+            <child link="${name}_steer_link"/>
             <origin xyz="${mount}" rpy="0 0 0"/> 
             <axis xyz="0 0 1"/>
         </joint>
         <joint name="${name}_wheel_joint" type="continuous">
-            <parent link="${name}_steer"/>
-            <child link="${name}_wheel"/>
-            <origin xyz="0 0 0" rpy="0.0 0.0 0.0"/>
+            <parent link="${name}_steer_link"/>
+            <child link="${name}_wheel_link"/>
+            <origin xyz="0 0 ${-wheel_radius}" rpy="0.0 0.0 0.0"/>
             <axis xyz="0 1 0"/>
         </joint>
     </xacro:macro>
 
     <!-- implementation -->
     <xacro:chassis />
-    <xacro:swerve_module name="fl" mount="-0.15 0.15 0.0"/>    
-    <xacro:swerve_module name="fr" mount="0.15 0.15 0.0"/>    
-    <xacro:swerve_module name="bl" mount="-0.15 -0.15 0.0"/>    
-    <xacro:swerve_module name="br" mount="0.15 -0.15 0.0"/>    
+    <xacro:swerve_module name="front_left" mount="-${wheel_base_half} ${wheel_base_half} 0.0"/>    
+    <xacro:swerve_module name="front_right" mount="${wheel_base_half} ${wheel_base_half} 0.0"/>    
+    <xacro:swerve_module name="back_left" mount="-${wheel_base_half} -${wheel_base_half} 0.0"/>    
+    <xacro:swerve_module name="back_right" mount="${wheel_base_half} -${wheel_base_half} 0.0"/>    
 
     <!-- control -->
     <xacro:include filename="drivetrain_control.xacro"/>

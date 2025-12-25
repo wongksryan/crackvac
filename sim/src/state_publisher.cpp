@@ -10,6 +10,7 @@
 
 using namespace std::chrono;
 
+// a mock state publisher. not used in the main project.
 class StatePublisher : public rclcpp::Node{
     public:
 
@@ -55,7 +56,7 @@ class StatePublisher : public rclcpp::Node{
 
 void StatePublisher::publish(){
     // create the necessary messages
-    //geometry_msgs::msg::TransformStamped t; TODO: add odometry`
+    geometry_msgs::msg::TransformStamped t; 
     rclcpp::Time now = this->get_clock()->now();
     dt = now.seconds() - last_time.seconds(); 
     last_time = now;
@@ -63,7 +64,6 @@ void StatePublisher::publish(){
     sensor_msgs::msg::JointState joint_state;
     joint_state.header.stamp = now;
     joint_state.name = joint_names;
-    //joint_state.velocity.resize(8, 2.0);
 
     //rotate wheel and steer
     for (int i = 0; i < 8; i++) {

@@ -4,7 +4,6 @@
         <hardware>
             <plugin>mock_components/GenericSystem</plugin>
             <param name="calculate_dynamics">true</param>
-            <param name="custom_interface_with_following_offset"></param>
             <param name="disable_commands">false</param>
             <param name="mock_gpio_commands">false</param>
             <param name="mock_sensor_commands">false</param>
@@ -12,21 +11,21 @@
         </hardware>
 
         <xacro:macro name="swerve_module_control" params="name">
+            <joint name="${name}_steer_joint"> 
+                <command_interface name="position"/>
+                <state_interface name="velocity" initial_value="0.0"/>
+                <state_interface name="position" initial_value="0.0"/>
+            </joint>
             <joint name="${name}_wheel_joint"> 
                 <command_interface name="velocity"/>
-                <state_interface name="position"/>
-                <state_interface name="velocity"/>
-            </joint>
-            <joint name="${name}_steer_joint"> 
-                <command_interface name="velocity"/>
-                <state_interface name="position"/>
-                <state_interface name="velocity"/>
+                <state_interface name="velocity" initial_value="0.0"/>
+                <state_interface name="position" initial_value="0.0"/>
             </joint>
         </xacro:macro>
 
-        <xacro:swerve_module_control name="fl"/>
-        <xacro:swerve_module_control name="fr"/>
-        <xacro:swerve_module_control name="bl"/>
-        <xacro:swerve_module_control name="br"/>
+        <xacro:swerve_module_control name="front_left"/>
+        <xacro:swerve_module_control name="front_right"/>
+        <xacro:swerve_module_control name="back_left"/>
+        <xacro:swerve_module_control name="back_right"/>
    </ros2_control> 
 </robot>
