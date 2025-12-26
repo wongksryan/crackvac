@@ -47,10 +47,13 @@ namespace swerve_drive {
         std::shared_ptr<rclcpp::Publisher<nav_msgs::msg::Odometry>> odom_publisher = nullptr;
         std::shared_ptr<tf2_ros::TransformBroadcaster> odom_tf_broadcaster = nullptr;
 
-        bool is_openloop = true;
-
+        bool is_sim = true;
+        
         public:
         SwerveController() {};
+
+        void send_odometry_msg(tf2::Quaternion orientation);
+        void send_transform_msg(tf2::Quaternion orientation);
 
         CallbackReturn on_init() override;
 

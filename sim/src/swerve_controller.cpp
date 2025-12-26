@@ -60,7 +60,7 @@ return_type SwerveController::update(
         double speed_x = desired_speeds.vx_mps - desired_speeds.omega_rps * offset.y;
         double speed_y = desired_speeds.vy_mps + desired_speeds.omega_rps * offset.x;
         double magnitude = std::sqrt(speed_x * speed_x + speed_y * speed_y);
-        double theta = std::atan2(speed_y, speed_x); //returns 0 if both linear speeds are zero.
+        double theta = std::atan2(speed_y, speed_x);
         state.speed_mps = magnitude;
         state.angle = Rotation2d(theta); 
         states.push_back(state);
@@ -72,6 +72,8 @@ return_type SwerveController::update(
     modules[2].set_module_states(states[2]);
     modules[3].set_module_states(states[3]);
 
+    //update wheel position
+    
     // TODO: closed loop and open loop modes
     // open loop robot pose estimation: 
     double dx = last_speeds.vx_mps * dt;
@@ -94,8 +96,14 @@ return_type SwerveController::update(
 
     tf2::Quaternion orientation;
     orientation.setRPY(0.0, 0.0, pose.rotation.get_radians());
-    
-    // update numerical odometry
+    send_odometry_msg(orientation);
+    send_transform_msg(orientation);
+
+    return return_type::OK;
+}
+
+// update numerical odometry
+void SwerveController::send_odometry_msg(tf2::Quaternion orientation) {
     nav_msgs::msg::Odometry odom_msg;
     odom_msg.header.frame_id = "odom";
     odom_msg.child_frame_id = "base_link";
@@ -110,8 +118,10 @@ return_type SwerveController::update(
     odom_msg.twist.twist.linear.y = last_speeds.vy_mps;
     odom_msg.twist.twist.angular.z = last_speeds.omega_rps;
     odom_publisher->publish(odom_msg);
-    
-    // update odometry transform
+}
+
+// update transform in rviz
+void SwerveController::send_transform_msg(tf2::Quaternion orientation) {
     geometry_msgs::msg::TransformStamped tf;
     tf.header.frame_id = "odom";
     tf.child_frame_id = "base_link";
@@ -123,13 +133,11 @@ return_type SwerveController::update(
     tf.transform.rotation.z = orientation.getZ();
     tf.transform.rotation.w = orientation.getW();
     odom_tf_broadcaster->sendTransform(tf);
-
-    return return_type::OK;
 }
 
-CallbackReturn SwerveController::on_init(){
-    // declare and get parameters needed for controller initialization
-    // allocate memory that will exist for the life of the controller
+// declare and get parameters needed for controller initialization
+// allocate memory that will exist for the life of the controller
+CallbackReturn SwerveController::on_init() {
     return CallbackReturn::SUCCESS;
 }
 
@@ -140,10 +148,13 @@ InterfaceConfiguration SwerveController::command_interface_configuration() const
     config.names = {
         "front_left_steer_joint/position",
         "front_left_wheel_joint/velocity",
+
         "front_right_steer_joint/position",
         "front_right_wheel_joint/velocity",
+
         "back_left_steer_joint/position",
         "back_left_wheel_joint/velocity",
+    
         "back_right_steer_joint/position",
         "back_right_wheel_joint/velocity"
     };
@@ -152,36 +163,52 @@ InterfaceConfiguration SwerveController::command_interface_configuration() const
 
 //configures feedback values to read
 InterfaceConfiguration SwerveController::state_interface_configuration() const {
-    //no received data for open loop
-    if (is_openloop) {
-        return {interface_configuration_type::NONE};
-    } else {
-        //closed loop setting
-        InterfaceConfiguration config;
-        config.type = interface_configuration_type::INDIVIDUAL;
-        config.names = {
-            "front_left_steer_joint/position",
-            "front_left_wheel_joint/velocity",
-            "front_right_steer_joint/position",
-            "front_right_wheel_joint/velocity",
-            "back_left_steer_joint/position",
-            "back_left_wheel_joint/velocity",
-            "back_right_steer_joint/position",
-            "back_right_wheel_joint/velocity"
-        };
-       return config;
-    }
+    InterfaceConfiguration config;
+    config.type = interface_configuration_type::INDIVIDUAL;
+    config.names = {
+        "front_left_steer_joint/position",
+        "front_left_steer_joint/velocity",
+        "front_left_wheel_joint/position",
+        "front_left_wheel_joint/velocity",
+
+        "front_right_steer_joint/position",
+        "front_right_steer_joint/velocity",
+        "front_right_wheel_joint/position",
+        "front_right_wheel_joint/velocity",
+
+        "back_left_steer_joint/position",
+        "back_left_steer_joint/velocity",
+        "back_left_wheel_joint/position",
+        "back_left_wheel_joint/velocity",
+
+        "back_right_steer_joint/position",
+        "back_right_steer_joint/velocity",
+        "back_right_wheel_joint/position"
+        "back_right_wheel_joint/velocity"
+    };
+    return config;
 }
 
 CallbackReturn SwerveController::on_activate(
     const rclcpp_lifecycle::State & previous_state) {
     modules.clear();
 
-    //create swerve modules
-    modules.emplace_back(command_interfaces_[0], command_interfaces_[1]); //fl
-    modules.emplace_back(command_interfaces_[2], command_interfaces_[3]); //fr
-    modules.emplace_back(command_interfaces_[4], command_interfaces_[5]); //bl
-    modules.emplace_back(command_interfaces_[6], command_interfaces_[7]); //br
+    // create swerve modules
+    // *** must insert in order of pos_cmd, vel_cmd, 
+    //              steer_pos_state, steer_vel_cmd, drive_pos_state, drive_vel_state.
+
+    // front left
+    modules.emplace_back(command_interfaces_[0], command_interfaces_[1], 
+        state_interfaces_[0], state_interfaces_[1], state_interfaces_[2], state_interfaces_[3]); 
+    // front right
+    modules.emplace_back(command_interfaces_[2], command_interfaces_[3],
+        state_interfaces_[4], state_interfaces_[5], state_interfaces_[6], state_interfaces_[7]); 
+    // back left
+    modules.emplace_back(command_interfaces_[4], command_interfaces_[5],
+        state_interfaces_[8], state_interfaces_[9], state_interfaces_[10], state_interfaces_[11]); 
+    // back right
+    modules.emplace_back(command_interfaces_[6], command_interfaces_[7],
+        state_interfaces_[12], state_interfaces_[13], state_interfaces_[14], state_interfaces_[15]); 
 
     RCLCPP_DEBUG(get_node()->get_logger(), "Initialized swerve modules.");
     return CallbackReturn::SUCCESS;
