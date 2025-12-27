@@ -182,7 +182,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: odom
+    Fixed Frame: base_link
     Frame Rate: 30
   Name: root
   Tools:
@@ -240,10 +240,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6103979349136353
+      Pitch: 0.8753978610038757
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.428579807281494
+      Yaw: 5.8785810470581055
     Saved: ~
 Window Geometry:
   Displays:
@@ -261,5 +261,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: -4
-  Y: -4
+  X: 19
+  Y: 18

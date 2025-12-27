@@ -1,10 +1,14 @@
 #include "sim/swerve_controller.hpp"
 
-
+/*
+Run the teleop with keyboards via:
+ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args --remap cmd_vel:=swerve_controller/cmd_vel 
+The default topic is cmd_vel. so we need to specify.
+*/
 namespace {
     constexpr auto default_command_in_topic = "~/cmd_vel"; // ~ part is replaced with namespace.
     constexpr auto default_odometry_topic = "~/odom";
-    constexpr auto default_transform_topic = "~/tf";
+    constexpr auto default_transform_topic = "/tf"; //rviz listens to /tf by default.
 }
 
 namespace swerve_drive {
@@ -21,35 +25,62 @@ CallbackReturn SwerveController::on_configure(
     auto node = this->get_node();
 
     //setup subscription to receive message from a topic
-    vel_cmd_subscriber = node->create_subscription<Twist>(
+    vel_cmd_subscriber = node->create_subscription<geometry_msgs::msg::Twist>(
         default_command_in_topic, 
         rclcpp::SystemDefaultsQoS(),
-        [this](const Twist::SharedPtr msg) {
-            desired_speeds.vx_mps = msg->linear.x;
-            desired_speeds.vy_mps = msg->linear.y;
-            desired_speeds.omega_rps = msg->angular.z;
+        [this](const geometry_msgs::msg::Twist::SharedPtr msg) {
+            received_vel_cmd.set(*msg);
         }); 
 
     //setup publishers to send message to a topic 
     odom_publisher = node->create_publisher<nav_msgs::msg::Odometry>(
         default_odometry_topic,
         rclcpp::SystemDefaultsQoS());
-    odom_tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(node);
+    realtime_odom_publisher 
+        = std::make_unique<realtime_tools::RealtimePublisher<nav_msgs::msg::Odometry>>(odom_publisher);
+
+    odom_tf_publisher = node->create_publisher<tf2_msgs::msg::TFMessage>(
+        default_transform_topic,
+        rclcpp::SystemDefaultsQoS());
+    realtime_odom_tf_publisher
+        = std::make_unique<realtime_tools::RealtimePublisher<tf2_msgs::msg::TFMessage>>(odom_tf_publisher);
+
+    // configure messages
+    const auto header_frame_id = "odom";
+    const auto child_frame_id = "base_link"; 
+    odom_msg.header.frame_id = header_frame_id;
+    odom_msg.child_frame_id = child_frame_id;
+    odom_transform.header.frame_id = header_frame_id;
+    odom_transform.child_frame_id = child_frame_id;
 
     RCLCPP_DEBUG(node->get_logger(), "Subscriber and publisher are now active.");
     return CallbackReturn::SUCCESS;
 }
 
-/*
-Run the teleop with keyboards via:
-ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args --remap cmd_vel:=swerve_controller/cmd_vel
-the default topic is cmd_vel. so we need to specify.
-*/
 return_type SwerveController::update(
     const rclcpp::Time & time, const rclcpp::Duration & period) {
     // Read controller input values from state interfaces
     // Calculate controller output values and write them to command interfaces
     const double dt = period.seconds();
+    
+    std::optional<geometry_msgs::msg::Twist> vel_cmd_op = received_vel_cmd.try_get();
+    if (vel_cmd_op.has_value()) {
+        last_vel_cmd = vel_cmd_op.value();
+        last_vel_cmd_time = time;
+    } 
+
+    rclcpp::Duration time_diff = time - last_vel_cmd_time; 
+    if (vel_cmd_timeout == rclcpp::Duration::from_seconds(0) ||
+        time_diff < vel_cmd_timeout) {
+        desired_speeds.vx_mps = last_vel_cmd.linear.x;
+        desired_speeds.vy_mps = last_vel_cmd.linear.y;
+        desired_speeds.omega_rps = last_vel_cmd.angular.z;
+    } else {
+        desired_speeds.vx_mps = 0;
+        desired_speeds.vy_mps = 0;
+        desired_speeds.omega_rps = 0;
+    }
+
     last_speeds = desired_speeds;
 
     // convert chassis speeds into module states
@@ -72,8 +103,6 @@ return_type SwerveController::update(
     modules[2].set_module_states(states[2]);
     modules[3].set_module_states(states[3]);
 
-    //update wheel position
-    
     // TODO: closed loop and open loop modes
     // open loop robot pose estimation: 
     double dx = last_speeds.vx_mps * dt;
@@ -94,20 +123,18 @@ return_type SwerveController::update(
                 + (dy / dheading) * (pose.rotation.sin() - old_heading.sin());
     }
 
+    // update odometry
     tf2::Quaternion orientation;
     orientation.setRPY(0.0, 0.0, pose.rotation.get_radians());
-    send_odometry_msg(orientation);
-    send_transform_msg(orientation);
+    send_odometry_msg(orientation, time);
+    send_transform_msg(orientation, time);
 
     return return_type::OK;
 }
 
 // update numerical odometry
-void SwerveController::send_odometry_msg(tf2::Quaternion orientation) {
-    nav_msgs::msg::Odometry odom_msg;
-    odom_msg.header.frame_id = "odom";
-    odom_msg.child_frame_id = "base_link";
-    odom_msg.header.stamp = get_node()->now();
+void SwerveController::send_odometry_msg(tf2::Quaternion orientation, rclcpp::Time time) {
+    odom_msg.header.stamp = time;
     odom_msg.pose.pose.position.x = pose.x;
     odom_msg.pose.pose.position.y = pose.y;
     odom_msg.pose.pose.orientation.x = orientation.getX();
@@ -117,22 +144,21 @@ void SwerveController::send_odometry_msg(tf2::Quaternion orientation) {
     odom_msg.twist.twist.linear.x = last_speeds.vx_mps;
     odom_msg.twist.twist.linear.y = last_speeds.vy_mps;
     odom_msg.twist.twist.angular.z = last_speeds.omega_rps;
-    odom_publisher->publish(odom_msg);
+    realtime_odom_publisher->try_publish(odom_msg);
 }
 
 // update transform in rviz
-void SwerveController::send_transform_msg(tf2::Quaternion orientation) {
-    geometry_msgs::msg::TransformStamped tf;
-    tf.header.frame_id = "odom";
-    tf.child_frame_id = "base_link";
-    tf.header.stamp = get_node()->now();
-    tf.transform.translation.x = pose.x;
-    tf.transform.translation.y = pose.y;
-    tf.transform.rotation.x = orientation.getX();
-    tf.transform.rotation.y = orientation.getY();
-    tf.transform.rotation.z = orientation.getZ();
-    tf.transform.rotation.w = orientation.getW();
-    odom_tf_broadcaster->sendTransform(tf);
+void SwerveController::send_transform_msg(tf2::Quaternion orientation, rclcpp::Time time) {
+    odom_transform.header.stamp = time;
+    odom_transform.transform.translation.x = pose.x;
+    odom_transform.transform.translation.y = pose.y;
+    odom_transform.transform.rotation.x = orientation.getX();
+    odom_transform.transform.rotation.y = orientation.getY();
+    odom_transform.transform.rotation.z = orientation.getZ();
+    odom_transform.transform.rotation.w = orientation.getW();
+    tf2_msgs::msg::TFMessage tf_msg;
+    tf_msg.transforms.push_back(odom_transform);
+    realtime_odom_tf_publisher->try_publish(tf_msg);
 }
 
 // declare and get parameters needed for controller initialization
@@ -183,7 +209,7 @@ InterfaceConfiguration SwerveController::state_interface_configuration() const {
 
         "back_right_steer_joint/position",
         "back_right_steer_joint/velocity",
-        "back_right_wheel_joint/position"
+        "back_right_wheel_joint/position",
         "back_right_wheel_joint/velocity"
     };
     return config;
@@ -191,12 +217,17 @@ InterfaceConfiguration SwerveController::state_interface_configuration() const {
 
 CallbackReturn SwerveController::on_activate(
     const rclcpp_lifecycle::State & previous_state) {
-    modules.clear();
+    last_vel_cmd.linear.x = 0;
+    last_vel_cmd.linear.y = 0;
+    last_vel_cmd.angular.z = 0;
+    desired_speeds.vx_mps = 0;
+    desired_speeds.vy_mps = 0;
+    desired_speeds.omega_rps = 0;
 
     // create swerve modules
     // *** must insert in order of pos_cmd, vel_cmd, 
-    //              steer_pos_state, steer_vel_cmd, drive_pos_state, drive_vel_state.
-
+    //          steer_pos_state, steer_vel_cmd, drive_pos_state, drive_vel_state.
+    modules.clear();
     // front left
     modules.emplace_back(command_interfaces_[0], command_interfaces_[1], 
         state_interfaces_[0], state_interfaces_[1], state_interfaces_[2], state_interfaces_[3]); 

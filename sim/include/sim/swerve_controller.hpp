@@ -21,7 +21,6 @@
 #include "constants.hpp"
 
 using namespace controller_interface;
-using Twist = geometry_msgs::msg::Twist;
 
 namespace swerve_drive {
     struct ChassisSpeeds {
@@ -38,22 +37,31 @@ namespace swerve_drive {
     class SwerveController : public ControllerInterface {
         private:
         std::vector<SwerveModule> modules;
-        ChassisSpeeds desired_speeds = ChassisSpeeds();
-        ChassisSpeeds last_speeds = ChassisSpeeds();
+        ChassisSpeeds desired_speeds, last_speeds;
         rclcpp::Time last_time;
         Pose2d pose;
-
-        rclcpp::Subscription<Twist>::SharedPtr vel_cmd_subscriber = nullptr;
-        std::shared_ptr<rclcpp::Publisher<nav_msgs::msg::Odometry>> odom_publisher = nullptr;
-        std::shared_ptr<tf2_ros::TransformBroadcaster> odom_tf_broadcaster = nullptr;
-
-        bool is_sim = true;
         
+        // realtime tools 
+        realtime_tools::RealtimeThreadSafeBox<geometry_msgs::msg::Twist> received_vel_cmd; 
+        std::unique_ptr<realtime_tools::RealtimePublisher<nav_msgs::msg::Odometry>> realtime_odom_publisher = nullptr;
+        std::unique_ptr<realtime_tools::RealtimePublisher<tf2_msgs::msg::TFMessage>> realtime_odom_tf_publisher = nullptr;
+        // default ROS tools
+        rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr vel_cmd_subscriber = nullptr;
+        std::shared_ptr<rclcpp::Publisher<nav_msgs::msg::Odometry>> odom_publisher = nullptr;
+        std::shared_ptr<rclcpp::Publisher<tf2_msgs::msg::TFMessage>> odom_tf_publisher = nullptr;
+        // messagges to send
+        nav_msgs::msg::Odometry odom_msg;
+        geometry_msgs::msg::TransformStamped odom_transform;
+        
+        rclcpp::Duration vel_cmd_timeout = rclcpp::Duration::from_seconds(0.5);
+        geometry_msgs::msg::Twist last_vel_cmd;
+        rclcpp::Time last_vel_cmd_time;
+
         public:
         SwerveController() {};
 
-        void send_odometry_msg(tf2::Quaternion orientation);
-        void send_transform_msg(tf2::Quaternion orientation);
+        void send_odometry_msg(tf2::Quaternion orientation, rclcpp::Time time);
+        void send_transform_msg(tf2::Quaternion orientation, rclcpp::Time time);
 
         CallbackReturn on_init() override;
 
