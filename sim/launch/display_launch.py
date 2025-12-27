@@ -7,7 +7,7 @@ from launch.actions import RegisterEventHandler
 from launch.event_handlers import OnProcessExit
 
 def generate_launch_description():
-    use_sim_time = False 
+    use_sim_time = False
 
     pckg_path = FindPackageShare('sim')
     xacro_file = PathJoinSubstitution([pckg_path,'urdf','robot_model.urdf.xacro'])

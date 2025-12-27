@@ -30,6 +30,7 @@ CallbackReturn SwerveController::on_configure(
         rclcpp::SystemDefaultsQoS(),
         [this](const geometry_msgs::msg::Twist::SharedPtr msg) {
             received_vel_cmd.set(*msg);
+            last_vel_cmd_time = get_node()->now();
         }); 
 
     //setup publishers to send message to a topic 
@@ -66,7 +67,6 @@ return_type SwerveController::update(
     std::optional<geometry_msgs::msg::Twist> vel_cmd_op = received_vel_cmd.try_get();
     if (vel_cmd_op.has_value()) {
         last_vel_cmd = vel_cmd_op.value();
-        last_vel_cmd_time = time;
     } 
 
     rclcpp::Duration time_diff = time - last_vel_cmd_time; 
@@ -220,6 +220,7 @@ CallbackReturn SwerveController::on_activate(
     last_vel_cmd.linear.x = 0;
     last_vel_cmd.linear.y = 0;
     last_vel_cmd.angular.z = 0;
+    last_vel_cmd_time = get_node()->now();
     desired_speeds.vx_mps = 0;
     desired_speeds.vy_mps = 0;
     desired_speeds.omega_rps = 0;

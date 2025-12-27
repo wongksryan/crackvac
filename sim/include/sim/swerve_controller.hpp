@@ -53,7 +53,7 @@ namespace swerve_drive {
         nav_msgs::msg::Odometry odom_msg;
         geometry_msgs::msg::TransformStamped odom_transform;
         
-        rclcpp::Duration vel_cmd_timeout = rclcpp::Duration::from_seconds(0.5);
+        rclcpp::Duration vel_cmd_timeout = rclcpp::Duration::from_seconds(0.5); //stops continuous command (for keyboard control)
         geometry_msgs::msg::Twist last_vel_cmd;
         rclcpp::Time last_vel_cmd_time;
 
