@@ -1,0 +1,17 @@
+# send lidar feedback from gazebo to ros2
+- topic_name: /scan
+  ros_type_name: sensor_msgs/msg/LaserScan
+  gz_type_name: gz.msgs.LaserScan
+  direction: GZ_TO_ROS # BIDIRECTIONAL or ROS_TO_GZ
+  
+# send fake hardware feedback from gazebo to ros2
+- topic_name: /imu
+  ros_type_name: sensor_msgs/msg/Imu
+  gz_type_name: gz.msgs.IMU
+  direction: GZ_TO_ROS
+
+# send simulation time from gazebo to ros2
+- topic_name: /clock
+  ros_type_name: rosgraph_msgs/msg/Clock
+  gz_type_name: gz.msgs.Clock
+  direction: GZ_TO_ROS

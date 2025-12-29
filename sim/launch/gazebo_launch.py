@@ -7,7 +7,7 @@ from launch.substitutions import PathJoinSubstitution, Command
 from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
-    use_sim_time = True
+    use_sim_time = True # this must match with other launch files
 
     my_pckg_path = FindPackageShare('sim')
     ros_gz_sim_pkg_path = get_package_share_directory('ros_gz_sim')
@@ -16,6 +16,8 @@ def generate_launch_description():
     #convert robot model xacro file into urdf
     model_xacro_file = PathJoinSubstitution([my_pckg_path,'urdf','robot_model.urdf.xacro'])
     robot_description = Command(['xacro ', model_xacro_file])
+
+    bridge_config_file = PathJoinSubstitution([my_pckg_path, 'configs', 'gazebo_bridge.yaml'])
 
     return LaunchDescription([
         # set environment variables
@@ -36,14 +38,14 @@ def generate_launch_description():
             }.items(),
         ),
         # bridge and remap Gazebo topics to ROS 2 
-        # we need to remap clock topic for controller_manager to function correctly
         Node(
             package="ros_gz_bridge",
             executable="parameter_bridge",
-            arguments=['/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock'],
             parameters=[{
                 "qos_overrides./tf_static.publisher.durability": "transient_local",
-                "use_sim_time": use_sim_time
+                'config_file': bridge_config_file,
+                "use_sim_time": use_sim_time,
+                'use_own_container': False 
             }],
             output="screen",
         ),
