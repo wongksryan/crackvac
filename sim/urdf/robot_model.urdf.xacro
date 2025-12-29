@@ -12,13 +12,13 @@
     </material>
 
     <!-- constants -->
-    <xacro:property name="wheel_radius" value="0.04"/> <!-- length unit: m-->
+    <xacro:property name="wheel_radius" value="0.04"/> <!-- length unit m-->
     <xacro:property name="wheel_width" value="0.03"/> 
     <xacro:property name="wheel_base" value="0.4064"/> 
     <xacro:property name="wheel_base_half" value="${wheel_base / 2}"/> 
     <xacro:property name="chassis_depth" value="0.2032"/>
-    <xacro:property name="chassis_mass" value="7.0"/> <!-- mass unit: kg-->
-    <xacro:property name="wheel_mass" value="0.186"/> <!-- mass unit: kg-->
+    <xacro:property name="chassis_mass" value="7.0"/> <!-- mass unit kg-->
+    <xacro:property name="wheel_mass" value="0.186"/> 
 
     <!-- macros -->
     <link name="dummy_link">
@@ -79,12 +79,6 @@
                 <origin xyz="0 0 0" rpy="1.57 0 0"/> <!-- 90 degree is 1.57 rad -->
                 <material name="black"/>
             </visual>
-            <collision>
-                <geometry>
-                    <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
-                </geometry>
-                <origin xyz="0 0 0" rpy="1.57 0 0"/>
-            </collision>
             <inertial>
                 <mass value="0.079"/>
                 <inertia 
