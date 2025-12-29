@@ -4,9 +4,10 @@
         <hardware>
             <plugin>mock_components/GenericSystem</plugin>
             <param name="calculate_dynamics">true</param>
+            <param name="custom_interface_with_following_offset"></param>
             <param name="disable_commands">false</param>
             <param name="mock_gpio_commands">false</param>
-            <param name="mock_sensor_commands">false</param>
+            <param name="mock_sensor_commands">true</param>
             <param name="position_state_following_offset">0.0</param>
         </hardware>
 

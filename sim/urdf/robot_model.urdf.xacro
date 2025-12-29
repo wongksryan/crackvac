@@ -19,7 +19,7 @@
     <xacro:property name="chassis_depth" value="0.2032"/>
     <xacro:property name="chassis_mass" value="7.0"/> <!-- mass unit: kg-->
     <xacro:property name="wheel_mass" value="0.186"/> <!-- mass unit: kg-->
-     
+
     <!-- macros -->
     <link name="dummy_link">
         <collision>
@@ -65,6 +65,10 @@
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <material name="blue"/>
             </visual>
+            <inertial>
+                <mass value="0.03"/>
+                <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.0001"/>
+            </inertial>
         </link>
 
         <link name="${name}_wheel_link">
