@@ -57,7 +57,7 @@ def generate_launch_description():
                 '-name', 'robot_model'
                 '-x','0',
                 '-y','0',
-                '-z','0'
+                '-z','1'
             ]
         )
     ])
