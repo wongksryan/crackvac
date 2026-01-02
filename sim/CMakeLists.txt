@@ -106,7 +106,7 @@ install(EXPORT export_${PROJECT_NAME}
 )
 # install other resources
 install(
-  DIRECTORY configs launch urdf sdf
+  DIRECTORY config launch urdf sdf
   DESTINATION share/${PROJECT_NAME}
 )
 

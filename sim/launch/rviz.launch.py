@@ -1,25 +1,26 @@
 from launch import LaunchDescription
-from launch.substitutions import PathJoinSubstitution, Command
+from launch.substitutions import PathJoinSubstitution, Command, LaunchConfiguration, FindExecutable
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
-from launch_ros.parameter_descriptions import ParameterValue
-from launch.actions import RegisterEventHandler
+from launch.actions import RegisterEventHandler, DeclareLaunchArgument
 from launch.event_handlers import OnProcessExit
 
-# launch rviz with swerve controller
+# launch rviz with controllers
 def generate_launch_description():
-    use_sim_time = True
+    use_sim_time = LaunchConfiguration('use_sim_time', default=True)
 
     my_pckg_path = FindPackageShare('sim')
-    controllers_file = PathJoinSubstitution([my_pckg_path,'configs','controllers.yaml'])
-    rviz_file = PathJoinSubstitution([my_pckg_path,'configs','display.rviz'])
+    controllers_file = PathJoinSubstitution([my_pckg_path,'config','controllers.yaml'])
+    rviz_file = PathJoinSubstitution([my_pckg_path,'config','display.rviz'])
 
-    # load robot model, get urdf via xacro
-    xacro_file = PathJoinSubstitution([my_pckg_path,'urdf','robot_model.urdf.xacro'])
-    robot_description = ParameterValue(
-        Command(['xacro ', xacro_file]),
-        value_type=str
+    # convert xacro into urdf 
+    robot_description = Command([
+            PathJoinSubstitution([FindExecutable(name='xacro')]),
+            ' ',
+            PathJoinSubstitution([my_pckg_path, 'urdf', 'robot_model.xacro.urdf'])
+        ]
     )
+ 
 
     start_controller_manager = Node(
         package='controller_manager',
@@ -32,7 +33,6 @@ def generate_launch_description():
         executable='robot_state_publisher',
         output='both',
         parameters=[{
-            'use_sim_time': use_sim_time,
             'robot_description': robot_description
         }],
     )
@@ -70,8 +70,13 @@ def generate_launch_description():
 
     return LaunchDescription([
         start_controller_manager,
+        delay_rviz_launch,
+        delay_swerve_controller_spawn,
         start_robot_state_publisher,
         spawn_joint_state_broadcaster,
-        delay_rviz_launch,
-        delay_swerve_controller_spawn
+        DeclareLaunchArgument(
+            'use_sim_time',
+            default_value=use_sim_time,
+            description='If true, use simulated clock'
+        ),
     ])
