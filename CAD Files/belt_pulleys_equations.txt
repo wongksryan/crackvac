@@ -1,0 +1,6 @@
+﻿"z"= 72'INPUT: number of teeth
+"p"= 5mm'INPUT: pitch (inches)
+"D_b" = 1.25'INPUT: bore diameter (inches)
+"s"= 0.5'INPUT: face width (inches)
+"D_p"= "z" * "p" / pi'pitch circle diameter
+"theta"= 180 / "z"'tooth angular size half (degrees)
