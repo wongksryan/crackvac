@@ -1,0 +1,17 @@
+﻿"P"= 25.4'INPUT: diameteral pitch
+"z"= 16'INPUT: number of teeth
+"a"= 20'INPUT: pressure angle, degrees
+"s"= 0.4'INPUT: face width (inches)
+"D_b"= 0.16'INPUT: gear bore diameter (inches)
+"c"= 0.157 / "P"'clearance
+"D_p"= "z" / "P"'pitch circle diameter
+"D_base"= "D_p" * cos ( "a" )'base circle diameter
+"h_a"= 1 / "P"'addendum depth
+"h_d"= 1 / "P" + "c"'dedendum depth
+"P_c"= pi / "P"'circular pitch
+"D_a"= "D_p" + ( 2 * "h_a" )'addendum diameter
+"D_d" = "D_p" - ( 2 * "h_d" )'dedendum diameter
+"theta"= 360 / "z"'pitch angle
+"a_inv"= ( "D_p" ^ 2 - "D_base" ^ 2 ) ^ 0.5 / "D_base" * 180 / pi - "a"'alpha angle for involute curve
+"b_inv"= ( "theta" / 4 - "a_inv" )'beta angle (parameter for ivolute curve parameterization)
+"zeta"= ( ( "D_a" / 2 ) ^ 2 - ( "D_base" / 2 ) ^ 2 ) ^ 0.5 / ( "D_base" / 2 )'zeta (domain for involute curve equation)
