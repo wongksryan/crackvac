@@ -26,4 +26,6 @@ We use LiDAR-based SLAM for real-time map generation and A* search for efficient
 - 8 x V5 80A ESC 3-6S 
 - 1 x ODrive S1 single motor driver
 - 1 x MPU-6050 IMU
-- 1 x battery 
+- 1 x battery
+- 1 x Rasberry Pi 5
+- 1 x Esp32
