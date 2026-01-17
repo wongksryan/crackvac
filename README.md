@@ -7,6 +7,13 @@ We use LiDAR-based SLAM for real-time map generation and A* search for efficient
 [![Watch the Demo](https://img.youtube.com/vi/wIKEoOrXFpg/0.jpg)](https://www.youtube.com/watch?v=wIKEoOrXFpg)  
 *Click the image to watch the full demo on YouTube.*
 
+### Swerve Chassis CAD
+<img src="https://github.com/user-attachments/assets/d7149049-8abd-4a92-a268-c0ef45bb03f8" width="50%" />
+
+### Swerve Module CAD
+<img src="https://github.com/user-attachments/assets/14902fec-26fc-48bf-869e-46cc69f485d4" width="50%" />
+
+
 ###  Drive Specification 
 - wheel radius: 1.5 inch
 - stage 1 gear ratio (spur):  1.7 : 1 = 34T : 20T
