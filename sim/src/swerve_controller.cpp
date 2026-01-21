@@ -1,12 +1,9 @@
 #include "sim/swerve_controller.hpp"
-
 /*
-Run the teleop with keyboards via:
-ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args --remap cmd_vel:=swerve_controller/cmd_vel 
-The default topic is cmd_vel. so we need to specify.
+Run the teleop with ps4 joystick
 */
 namespace {
-    constexpr auto default_command_in_topic = "~/cmd_vel"; // ~ part is replaced with namespace.
+    constexpr auto default_joy_topic = "/joy";
     constexpr auto default_odometry_topic = "~/odom";
     constexpr auto default_transform_topic = "/tf"; //rviz listens to /tf by default.
 }
@@ -25,12 +22,11 @@ CallbackReturn SwerveController::on_configure(
     auto node = this->get_node();
 
     //setup subscription to receive message from a topic
-    vel_cmd_subscriber = node->create_subscription<geometry_msgs::msg::Twist>(
-        default_command_in_topic, 
+    joystick_subscriber = node->create_subscription<sensor_msgs::msg::Joy>(
+        default_joy_topic, 
         rclcpp::SystemDefaultsQoS(),
-        [this](const geometry_msgs::msg::Twist::SharedPtr msg) {
+        [this](const sensor_msgs::msg::Joy::SharedPtr msg) {
             received_vel_cmd.set(*msg);
-            last_vel_cmd_time = get_node()->now();
         }); 
 
     //setup publishers to send message to a topic 
@@ -64,20 +60,31 @@ return_type SwerveController::update(
     // Calculate controller output values and write them to command interfaces
     const double dt = period.seconds();
     
-    std::optional<geometry_msgs::msg::Twist> vel_cmd_op = received_vel_cmd.try_get();
+    std::optional<sensor_msgs::msg::Joy> vel_cmd_op = received_vel_cmd.try_get();
     if (vel_cmd_op.has_value()) {
         last_vel_cmd = vel_cmd_op.value();
-    } 
 
-    rclcpp::Duration time_diff = time - last_vel_cmd_time; 
-    if (vel_cmd_timeout == rclcpp::Duration::from_seconds(0) ||
-        time_diff < vel_cmd_timeout) {
-        desired_speeds.vx_mps = last_vel_cmd.linear.x;
-        desired_speeds.vy_mps = last_vel_cmd.linear.y;
-        desired_speeds.omega_rps = last_vel_cmd.angular.z;
+        double joystick_left_x = last_vel_cmd.axes[0];
+        double joystick_left_y = last_vel_cmd.axes[1];
+        double joystick_right_x = last_vel_cmd.axes[3];
+        
+        desired_speeds.vx_mps = joystick_left_x * drive_speed_factor;
+        desired_speeds.vy_mps = joystick_left_y * drive_speed_factor;
+        desired_speeds.omega_rps = joystick_right_x * steer_speed_factor;
     } else {
-        desired_speeds.vx_mps = 0;
+        desired_speeds.vx_mps = 0; 
         desired_speeds.vy_mps = 0;
+        desired_speeds.omega_rps = 0;
+    }
+
+    // deadband
+    if (std::abs(desired_speeds.vx_mps) <= 0.1) {
+        desired_speeds.vx_mps = 0;
+    } 
+    if (std::abs(desired_speeds.vy_mps) <= 0.1) {
+        desired_speeds.vy_mps = 0;
+    }
+    if (std::abs(desired_speeds.omega_rps) <= 0.1) {
         desired_speeds.omega_rps = 0;
     }
 
@@ -217,10 +224,7 @@ InterfaceConfiguration SwerveController::state_interface_configuration() const {
 
 CallbackReturn SwerveController::on_activate(
     const rclcpp_lifecycle::State & previous_state) {
-    last_vel_cmd.linear.x = 0;
-    last_vel_cmd.linear.y = 0;
-    last_vel_cmd.angular.z = 0;
-    last_vel_cmd_time = get_node()->now();
+    last_vel_cmd.axes.resize(8, 0);
     desired_speeds.vx_mps = 0;
     desired_speeds.vy_mps = 0;
     desired_speeds.omega_rps = 0;

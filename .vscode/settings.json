@@ -1,3 +1,10 @@
 {
-    "cmake.sourceDirectory": "/home/ge3626/crackvac/sim"
+    "cmake.sourceDirectory": "/home/ge3626/crackvac/sim",
+    "ROS2.distro": "kilted",
+    "python.autoComplete.extraPaths": [
+        "/opt/ros/kilted/lib/python3.12/site-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/opt/ros/kilted/lib/python3.12/site-packages"
+    ]
 }

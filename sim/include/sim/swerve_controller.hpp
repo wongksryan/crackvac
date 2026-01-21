@@ -10,6 +10,7 @@
 #include "realtime_tools/realtime_thread_safe_box.hpp"
 #include "realtime_tools/realtime_publisher.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
+#include "sensor_msgs/msg/joy.hpp"
 #include "tf2_msgs/msg/tf_message.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "hardware_interface/loaned_command_interface.hpp"
@@ -40,22 +41,22 @@ namespace swerve_drive {
         ChassisSpeeds desired_speeds, last_speeds;
         rclcpp::Time last_time;
         Pose2d pose;
+        const double drive_speed_factor = 2.5;
+        const double steer_speed_factor = 2.5;
         
         // realtime tools 
-        realtime_tools::RealtimeThreadSafeBox<geometry_msgs::msg::Twist> received_vel_cmd; 
+        realtime_tools::RealtimeThreadSafeBox<sensor_msgs::msg::Joy> received_vel_cmd; 
         std::unique_ptr<realtime_tools::RealtimePublisher<nav_msgs::msg::Odometry>> realtime_odom_publisher = nullptr;
         std::unique_ptr<realtime_tools::RealtimePublisher<tf2_msgs::msg::TFMessage>> realtime_odom_tf_publisher = nullptr;
         // default ROS tools
-        rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr vel_cmd_subscriber = nullptr;
+        rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joystick_subscriber = nullptr;
         std::shared_ptr<rclcpp::Publisher<nav_msgs::msg::Odometry>> odom_publisher = nullptr;
         std::shared_ptr<rclcpp::Publisher<tf2_msgs::msg::TFMessage>> odom_tf_publisher = nullptr;
         // messagges to send
         nav_msgs::msg::Odometry odom_msg;
         geometry_msgs::msg::TransformStamped odom_transform;
         
-        rclcpp::Duration vel_cmd_timeout = rclcpp::Duration::from_seconds(0.5); //stops continuous command (for keyboard control)
-        geometry_msgs::msg::Twist last_vel_cmd;
-        rclcpp::Time last_vel_cmd_time;
+        sensor_msgs::msg::Joy last_vel_cmd;
 
         public:
         SwerveController() {};

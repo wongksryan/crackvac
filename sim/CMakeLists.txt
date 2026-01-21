@@ -37,17 +37,6 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-# add executable
-add_executable(state_publisher src/state_publisher.cpp)
-target_link_libraries(state_publisher PUBLIC
-  rclcpp::rclcpp
-  tf2::tf2
-  tf2_ros::tf2_ros
-  ${geometry_msgs_TARGETS}
-  ${sensor_msgs_TARGETS}
-)
-
-
 # add library
 add_library(
   swerve_drive
@@ -74,6 +63,7 @@ target_link_libraries(swerve_drive PUBLIC
   ${geometry_msgs_TARGETS}
   ${nav_msgs_TARGETS}
   ${tf2_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
 )
 
 pluginlib_export_plugin_description_file(
@@ -93,11 +83,6 @@ install(
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
-)
-# install executable
-install(
-  TARGETS state_publisher 
-  RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 # export CMake targets
 install(EXPORT export_${PROJECT_NAME}
