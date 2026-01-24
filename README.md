@@ -1,5 +1,7 @@
 ## Swerve Drive Autonomous Vacuum Robot
 
+More formal project overview: https://sarahyoo.vercel.app/project/vacuum-robot
+
 ### Mapping and Planning
 We are currently prototyping mapping and coverage planning in a (![separate repository](https://github.com/sarahyoo011725/coverage-planning))
 We use LiDAR-based SLAM for real-time map generation and A* search for efficient path planning. These components will later be integrated to enable full autonomous coverage planning.
