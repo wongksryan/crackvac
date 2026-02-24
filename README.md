@@ -29,7 +29,7 @@ We use LiDAR-based SLAM for real-time map generation and A* search for efficient
 - stage 2 gear ratio (belt): 4 : 1 = 72T : 18T
 - steer speed after gear reduction: 6480 rpm / 60 / 3 / 4 = 9 rps = 3240 degrees/s
 
-### Hardwares List
+### Hardware List
 - 8 x N5065S 270kV BLDC motor
 - 8 x V5 80A ESC 3-6S 
 - 1 x ODrive S1 single motor driver
